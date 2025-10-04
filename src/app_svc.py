@@ -7,13 +7,13 @@ from supabase import create_client, Client
 load_dotenv()
 url = os.getenv("SUPABASE_URL")
 key = os.getenv("SUPABASE_SERVER_ROLE_KEY")
-supabase: Client = create_client(url, key)
+sb: Client = create_client(url, key)
 
 # Simulate a user
 owner_id = str(uuid.uuid4())
 
 # Create a course
-course_id = supabase.rpc("create_course_rpc", {
+course_id = sb.rpc("create_course_rpc", {
     "p_name": "Partial Differential Equations",
     "p_term": "Fall 2025",
     "p_owner": owner_id
@@ -21,7 +21,7 @@ course_id = supabase.rpc("create_course_rpc", {
 print("Course:", course_id)
 
 # Create a document
-doc_id = supabase.rpc("create_document_rpc", {
+doc_id = sb.rpc("create_document_rpc", {
     "p_course": course_id,
     "p_title": "Sample Lecture",
     "p_type": "pdf",
@@ -36,7 +36,7 @@ vec_text  = [0.0] * 768
 vec_text[0] = 1.0  # just to make it non-zero
 vec_image = None
 
-chunk_id = supabase.rpc("insert_chunk_rpc", {
+chunk_id = sb.rpc("insert_chunk_rpc", {
     "p_course": course_id,
     "p_doc": doc_id,
     "p_vec_text": vec_text,
@@ -51,7 +51,7 @@ chunk_id = supabase.rpc("insert_chunk_rpc", {
 print("Chunk:", chunk_id)
 
 # Search (course-gated)
-results = supabase.rpc("search_chunks_rpc", {
+results = sb.rpc("search_chunks_rpc", {
     "p_course": course_id,
     "p_qvec": vec_text,
     "p_k": 5
