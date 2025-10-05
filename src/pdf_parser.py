@@ -1,3 +1,5 @@
+"""PDF ingestion and parsing module to database for RAG processing."""
+
 # Imports
 import os, io, math, uuid
 from dotenv import load_dotenv

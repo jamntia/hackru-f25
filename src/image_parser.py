@@ -1,3 +1,5 @@
+"""Image ingestion and parsing module to database for RAG processing."""
+
 # Imports
 import os, io, uuid, math, json, hashlib
 from dotenv import load_dotenv

@@ -1,4 +1,4 @@
-# rag.py
+"""RAG (Retrieval-Augmented Generation) module for answering questions using course materials."""
 
 # Imports
 import os, math, json, textwrap
