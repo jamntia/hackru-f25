@@ -114,14 +114,14 @@ def content_hash(*parts: str) -> str:
     return hashlib.sha1(norm.encode('utf-8')).hexdigest()
 
 # Function for image upload
-def upload_image(owner_id: str, course_id: str, path: str, title=None) -> tuple[str, str, str]:
-    nice_title = title or os.path.splitext(os.path.basename(pdf_path))[0].replace("_"," ")
+def upload_image(owner_id: str, course_id: str, img_path: str, title=None) -> tuple[str, str, str]:
+    nice_title = title or os.path.splitext(os.path.basename(img_path))[0].replace("_"," ")
     ensure_bucket(BUCKET, public=True)  # set False for want private + signed URLs
     doc_id = str(uuid.uuid4())
     storage_path = f"owners/{owner_id}/courses/{course_id}/images/{doc_id}.png"
 
     # Normalize to PNG
-    img = Image.open(path).convert("RGB")
+    img = Image.open(img_path).convert("RGB")
     buf = io.BytesIO()
     img.save(buf, format="PNG")
     png_bytes = buf.getvalue()

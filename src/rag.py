@@ -160,6 +160,8 @@ def build_prompt(question: str, assistance_level: str, mode: str, context: str) 
         - Keep notation consistent with the course materials.
         - Show key steps (not every algebra line).
         - If an image is relevant, refer to it as [n] and summarize its caption.
+        - For any math symbols, surround them with $...$ for inline or $$...$$ for display.
+        - Do not put Markdown links inside LaTeX math. If you need a citation next to a formula, write [n] outside the math block.
     """).strip()
 
 # Debug count chucks method
