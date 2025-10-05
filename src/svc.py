@@ -8,6 +8,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from supabase import create_client, Client
+from datetime import datetime
 
 logger = logging.getLogger("svc")
 
@@ -94,6 +95,13 @@ class ChatOut(BaseModel):
     sources: List[Dict[str, Any]]
     sources_dedup: Optional[List[Dict[str, Any]]] = None
     meta: Optional[Dict[str, Any]] = None
+
+class MessageOut(BaseModel):
+    id: str
+    course_id: str
+    question: str
+    answer: str
+    created_at: datetime
 
 # Helpers
 def get_owner_id(owner_id_header: Optional[str], owner_id_body: Optional[str]) -> str:
@@ -230,8 +238,8 @@ async def upload_image_endpoint(
 
 @app.post("/chat/ask", response_model=ChatOut)
 def chat_ask(payload: ChatIn, x_user_id: Optional[str] = Header(default=None)):
-    # x_user_id is accepted for future per-user personalization/audit;
-    # retrieval is course-scoped today.
+    owner = get_owner_id(x_user_id, None)  # <- ensure we know the user
+
     try:
         res = answer_question(
             course_id=payload.course_id,
@@ -240,10 +248,25 @@ def chat_ask(payload: ChatIn, x_user_id: Optional[str] = Header(default=None)):
             mode=payload.mode,
             k=payload.k
         )
+
+        # Best-effort persist; don’t break the response on insert errors
+        try:
+            sb.table("messages").insert({
+                "owner_id": owner,
+                "course_id": payload.course_id,
+                "question": payload.question,
+                "answer":  res.get("answer", ""),
+                "sources": json.dumps(res.get("sources_dedup") or res.get("sources") or []),
+                "meta":    json.dumps(res.get("meta") or {}),
+            }).execute()
+        except Exception as log_err:
+            logger.warning(f"failed to log message: {log_err}")
+
         return res
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Chat failed: {type(e).__name__}: {e}")
+
 
 @app.get("/search/preview")
 def search_preview(course_id: str, q: str, k: int = 6):
@@ -272,3 +295,15 @@ def get_course(course_id: str, x_user_id: Optional[str] = Header(default=None)):
     if not row:
         raise HTTPException(status_code=404, detail="Course not found")
     return row
+
+@app.get("/chat/history", response_model=List[MessageOut])
+def chat_history(course_id: str, limit: int = 20, x_user_id: Optional[str] = Header(default=None)):
+    owner = get_owner_id(x_user_id, None)
+    rows = (sb.table("messages")
+            .select("id, course_id, question, answer, created_at")
+            .eq("owner_id", owner)
+            .eq("course_id", course_id)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()).data or []
+    return rows
