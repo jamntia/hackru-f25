@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import 'katex/dist/katex.min.css';
+import rehypeKatex from 'rehype-katex';
+
 
 // Read from NEXT_PUBLIC_ envs (browser-safe)
 const API = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8001';
@@ -16,6 +20,12 @@ type Source = {
   score?: number | null;
   is_image?: boolean;
 };
+
+function normalizeMath(s: string) {
+  return (s || '')
+    .replace(/\\\[/g, '$$').replace(/\\\]/g, '$$')
+    .replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+}
 
 export default function ChatPage() {
   const [q, setQ] = useState('');
@@ -57,7 +67,8 @@ export default function ChatPage() {
       }
 
       const data = await res.json();
-      setAnswer(data.answer || '');
+      const cleaned = normalizeMath(data.answer || '');
+      setAnswer(cleaned);
       setSources(data.sources_dedup || data.sources || []);
       setMeta(data.meta || null);
     } catch (e: any) {
@@ -133,12 +144,15 @@ export default function ChatPage() {
       )}
 
       {answer && (
-        <article style={{ lineHeight: 1.6, marginBottom: 24 }}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {answer}
-          </ReactMarkdown>
-        </article>
-      )}
+  <article style={{ lineHeight: 1.6, marginBottom: 24 }}>
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm, remarkMath]}
+      rehypePlugins={[rehypeKatex]}
+    >
+      {answer}
+    </ReactMarkdown>
+  </article>
+)}
 
       {sources?.length > 0 && (
         <section>

@@ -160,6 +160,7 @@ def build_prompt(question: str, assistance_level: str, mode: str, context: str) 
         - Keep notation consistent with the course materials.
         - Show key steps (not every algebra line).
         - If an image is relevant, refer to it as [n] and summarize its caption.
+        - For any math symbols, surround them with $...$ for inline or $$...$$ for display.
     """).strip()
 
 # Debug count chucks method

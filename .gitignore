@@ -1,1 +1,18 @@
 .env
+.env.local
+
+# Node
+node_modules/
+.npm/
+.next/
+out/
+dist/
+coverage/
+.vercel/
+
+venv/
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
