@@ -184,11 +184,11 @@ def ingest_image(owner_id: str, course_id: str, image_path: str):
     return {"document_id": document_id, "chunk_id": ch_id, "url": url, "meta": meta}
 
 if __name__ == "__main__":
-    owner_id = str(uuid.uuid4())
-    course_id = sb.rpc("create_course_rpc", {
-        "p_name": "PDE 401",
-        "p_term": "Fall 2025",
-        "p_owner": owner_id
-    }).execute().data
+    owner_id = "11111111-2222-3333-4444-555555555555"
+    course_id = sb.rpc("get_or_create_course_rpc", {
+    "p_name": "PDE 401",
+    "p_term": "Fall 2025",
+    "p_owner": owner_id
+}).execute().data
 
     print(ingest_image(owner_id, course_id, "./images/Partial_Differential_Equations_Image.jpeg"))

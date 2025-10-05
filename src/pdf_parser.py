@@ -113,10 +113,10 @@ def ingest_pdf(owner_id: str, course_id: str, pdf_path: str):
 
 if __name__ == "__main__":
     # EXAMPLE: replace with a real owner (Supabase Auth user id) once you have auth wired
-    owner = str(uuid.uuid4())
-    course = sb.rpc("create_course_rpc", {
-        "p_name": "PDE 401",
-        "p_term": "Fall 2025",
-        "p_owner": owner
-    }).execute().data
+    owner = "11111111-2222-3333-4444-555555555555"
+    course = sb.rpc("get_or_create_course_rpc", {
+    "p_name": "PDE 401",
+    "p_term": "Fall 2025",
+    "p_owner": owner
+}).execute().data
     ingest_pdf(owner, course, "./pdfs/Partial_Differential_Equations_Textbook.pdf")
