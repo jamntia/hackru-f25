@@ -114,7 +114,8 @@ def content_hash(*parts: str) -> str:
     return hashlib.sha1(norm.encode('utf-8')).hexdigest()
 
 # Function for image upload
-def upload_image(owner_id: str, course_id: str, path: str) -> tuple[str, str, str]:
+def upload_image(owner_id: str, course_id: str, path: str, title=None) -> tuple[str, str, str]:
+    nice_title = title or os.path.splitext(os.path.basename(pdf_path))[0].replace("_"," ")
     ensure_bucket(BUCKET, public=True)  # set False for want private + signed URLs
     doc_id = str(uuid.uuid4())
     storage_path = f"owners/{owner_id}/courses/{course_id}/images/{doc_id}.png"
@@ -133,7 +134,7 @@ def upload_image(owner_id: str, course_id: str, path: str) -> tuple[str, str, st
     # Add source_type to document meta (optional but useful)
     doc_row = sb.rpc("create_document_rpc", {
         "p_course": course_id,
-        "p_title": os.path.basename(path),
+        "p_title": nice_title,  # <— use friendly title
         "p_type": "image",
         "p_url": url,
         "p_meta": {"path": storage_path, "source_type": "image"},

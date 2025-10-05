@@ -34,7 +34,8 @@ def embed(text: str) -> list[float]:
     return [x/n for x in v]
 
 # Function for uploading pdfs
-def upload_pdf(owner_id: str, course_id: str, pdf_path: str) -> tuple[str, str]:
+def upload_pdf(owner_id: str, course_id: str, pdf_path: str, title=None) -> tuple[str, str]:
+    nice_title = title or os.path.splitext(os.path.basename(pdf_path))[0].replace("_"," ")
     doc_id = str(uuid.uuid4())
     storage_path = f"owners/{owner_id}/courses/{course_id}/docs/{doc_id}.pdf"
     with open(pdf_path, "rb") as f:
@@ -43,10 +44,10 @@ def upload_pdf(owner_id: str, course_id: str, pdf_path: str) -> tuple[str, str]:
     # create document row
     resp = sb.rpc("create_document_rpc", {
         "p_course": course_id,
-        "p_title": os.path.basename(pdf_path),
+        "p_title": nice_title,  # <— use friendly title
         "p_type": "pdf",
         "p_url": url,
-        "p_meta": {},
+        "p_meta": {"original_filename": os.path.basename(pdf_path)},
         "p_owner": owner_id
     }).execute()
     return resp.data, url
